@@ -35,6 +35,7 @@ Rules:
 - Do not wrap output in markdown or code blocks`;
 
   try {
+    console.log("Calling API with key:", API_KEY?.slice(0, 10)); 
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
@@ -105,7 +106,8 @@ Do NOT use generic filler phrases. Do NOT add disclaimers or headers.`;
     if (!response.ok) throw new Error("Summary API error");
     const data = await response.json();
     return data.choices?.[0]?.message?.content?.trim() || fallbackSummary(property, userQuery);
-  } catch {
+} catch (err) {
+    console.error("Summary error:", err);
     return fallbackSummary(property, userQuery);
   }
 }
