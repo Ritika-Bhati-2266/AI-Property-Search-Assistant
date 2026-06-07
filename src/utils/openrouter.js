@@ -1,5 +1,5 @@
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const MODEL = "mistralai/mistral-7b-instruct:free";
+const MODEL = "openrouter/auto";
 const API_KEY = process.env.REACT_APP_OPENROUTER_KEY;
 
 console.log("API KEY:", API_KEY);
