@@ -1,0 +1,5 @@
+node_modules/
+build/
+.DS_Store
+.env
+VITE_OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxx
