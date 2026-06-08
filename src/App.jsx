@@ -53,11 +53,18 @@ export default function App() {
       const parsed = await parseSearchQuery(q);
       setFilters(parsed);
 
-      const filtered = filterProperties(parsed);
-      const ranked = rankProperties(filtered, parsed);
-      // If nothing matches strict filters, show all ranked by relevance
-      const finalResults = ranked.length > 0 ? ranked : rankProperties(allProperties, parsed);
-      setResults(finalResults);
+    const filtered = filterProperties(parsed);
+    const ranked = rankProperties(filtered, parsed);
+    let finalResults = ranked;
+    if (ranked.length === 0) {
+      const relaxed = { ...parsed, sectors: [] };
+      const relaxedFiltered = filterProperties(relaxed);
+      finalResults = rankProperties(
+        relaxedFiltered.length > 0 ? relaxedFiltered : allProperties,
+        parsed
+      );
+    }
+    setResults(finalResults);
 
       // AI follow-up (fire and forget)
       generateFollowUp(q, parsed).then(setFollowUp).catch(() => {});
