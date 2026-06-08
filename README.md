@@ -31,7 +31,13 @@ Opens at [http://localhost:3000](http://localhost:3000)
 ---
 
 ## 🛠 Stack
+| Layer | Choice |
+|---|---|
+| Framework | React 18 (Create React App) |
 | LLM API | OpenRouter — `openrouter/auto` |
+| Styling | Pure CSS, CSS variables, Google Fonts |
+| Icons | Lucide React |
+| Data | 12 mock properties (Gurgaon sectors, realistic prices) |
 
 ---
 
@@ -54,24 +60,28 @@ Opens at [http://localhost:3000](http://localhost:3000)
 ## 🧠 Prompt Design Notes
 
 ### Query Parsing Prompt
-### What Didn't Work
-- **No system prompt**: Model returned verbose explanations + JSON — fragile to parse.
-- **Asking for confidence scores**: Added noise without value.
-- **google/gemma-3-27b-it:free**: Returned 404 — model unavailable on free tier.
-- **mistralai/mistral-7b-instruct:free**: Also 404 — not available.
-- **Switched to `openrouter/auto`**: Automatically selects best available free model — reliable and future-proof.
+The system prompt returns **only a strict JSON schema** — no prose, no markdown wrappers. Key design decisions:
+
+1. **Schema-first**: All field names, types, and null behaviour defined upfront. Prevents hallucination and makes parsing deterministic.
+
+2. **Explicit mapping rules**: `"good sunlight" → ["Natural Light"]`, `"near school" → ["School Nearby"]`, Crore→Lakhs conversion — all spelled out. Without this, the model returns inconsistent keys that don't map to property data.
+
+3. **Heuristics for vague queries**: `"budget" → maxPrice: 70`, `"luxury" → minPrice: 100`. The model doesn't leave null when intent is clear.
+
+4. **Fallback parser**: If the API call fails, a local regex-based parser handles the query gracefully — app never breaks.
 
 ### What Didn't Work
 - **No system prompt**: Model returned verbose explanations + JSON mixed together — fragile to parse.
 - **Asking for confidence scores**: Added noise without value at this scale.
-- **Mistral-7b-instruct**: Occasionally returned malformed JSON on complex multi-criteria queries. Gemma-3-27b was noticeably more reliable for structured output.
+- **google/gemma-3-27b-it:free**: Returned 404 — model unavailable on free tier.
+- **mistralai/mistral-7b-instruct:free**: Also 404 — not available on free tier.
+- **Switched to `openrouter/auto`**: Automatically selects best available free model — reliable and future-proof.
 
 ### Property Summary Prompt
 - Injects both the user's **exact original query** and full property data into one message.
 - Explicit instructions: *second person, specific references, no disclaimers, no generic phrases*.
 - `max_tokens: 200` forces conciseness — prevents rambling.
 
-### Model Choice: `google/gemma-3-27b-it:free`
 ### Model Choice: `openrouter/auto`
 - Automatically routes to best available free model
 - Tried gemma-3-27b and mistral-7b — both returned 404 on free tier
