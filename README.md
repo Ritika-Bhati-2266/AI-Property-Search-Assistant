@@ -2,6 +2,8 @@
 
 > India's AI & VR-Powered Real Estate Platform — Intern Assignment Submission
 
+Built to replace traditional filter-based property search with AI-driven natural language understanding.
+
 ---
 
 ## 🚀 Setup Instructions
@@ -20,7 +22,7 @@ Edit `.env` and replace with your key:
 ```
 REACT_APP_OPENROUTER_KEY=sk-or-v1-xxxxxxxxxxxxxxxx
 ```
-Get a **free key** (no credit card) at [openrouter.ai/keys](https://openrouter.ai/keys)
+Get a free key (no credit card) at [openrouter.ai/keys](https://openrouter.ai/keys)
 
 ### 3. Run
 ```bash
@@ -47,7 +49,7 @@ Opens at [http://localhost:3000](http://localhost:3000)
 1. **Natural Language Search** → LLM parses query into structured filters (BHK, price, sectors, amenities) → drives results
 2. **Property Cards** — polished grid with BHK, price, area, match reason badges, 360° thumbnail
 3. **AI Property Summary** — live OpenRouter call on card click, personalised 2-3 lines referencing the original query
-4. **Bonus Feature** — multiple bonus features below
+4. **Bonus Features** — see below
 
 ### Bonus Features
 - 🎙 **Voice Search** — Web Speech API (Chrome), locale `en-IN` for Indian accents
@@ -60,30 +62,30 @@ Opens at [http://localhost:3000](http://localhost:3000)
 ## 🧠 Prompt Design Notes
 
 ### Query Parsing Prompt
-The system prompt returns **only a strict JSON schema** — no prose, no markdown wrappers. Key design decisions:
+Used a schema-first approach — the system prompt defines the exact JSON structure the model must return, with no markdown or wrappers. Key decisions:
 
 1. **Schema-first**: All field names, types, and null behaviour defined upfront. Prevents hallucination and makes parsing deterministic.
 
-2. **Explicit mapping rules**: `"good sunlight" → ["Natural Light"]`, `"near school" → ["School Nearby"]`, Crore→Lakhs conversion — all spelled out. Without this, the model returns inconsistent keys that don't map to property data.
+2. **Explicit mapping rules**: `"good sunlight"` → `["Natural Light"]`, `"near school"` → `["School Nearby"]`, Crore→Lakhs conversion built in. Without this, the model returns inconsistent keys that don't map to property data.
 
-3. **Heuristics for vague queries**: `"budget" → maxPrice: 70`, `"luxury" → minPrice: 100`. The model doesn't leave null when intent is clear.
+3. **Heuristics for vague queries**: `"budget"` → `maxPrice: ₹70L`, `"luxury"` → `minPrice: ₹100L`. The model doesn't leave null when intent is clear.
 
 4. **Fallback parser**: If the API call fails, a local regex-based parser handles the query gracefully — app never breaks.
 
-### What Didn't Work
-- **No system prompt**: Model returned verbose explanations + JSON mixed together — fragile to parse.
-- **Asking for confidence scores**: Added noise without value at this scale.
-- **google/gemma-3-27b-it:free**: Returned 404 — model unavailable on free tier.
-- **mistralai/mistral-7b-instruct:free**: Also 404 — not available on free tier.
-- **Switched to `openrouter/auto`**: Automatically selects best available free model — reliable and future-proof.
-
 ### Property Summary Prompt
-- Injects both the user's **exact original query** and full property data into one message.
-- Explicit instructions: *second person, specific references, no disclaimers, no generic phrases*.
-- `max_tokens: 200` forces conciseness — prevents rambling.
+- Injects both the user's exact original query and full property data into one message
+- Explicit instructions: second person, specific references, no disclaimers, no generic phrases
+- `max_tokens: 200` forces conciseness — prevents rambling
+
+### What Didn't Work
+- **No system prompt**: Model returned verbose explanations mixed with JSON — fragile to parse
+- **Asking for confidence scores**: Added noise without value at this scale
+- **`google/gemma-3-27b-it:free`**: Returned 404 — model unavailable on free tier
+- **`mistralai/mistral-7b-instruct:free`**: Also 404 — not available on free tier
+- **Switched to `openrouter/auto`**: Automatically selects best available free model — reliable and future-proof
 
 ### Model Choice: `openrouter/auto`
-- Automatically routes to best available free model
+- Automatically routes to the best available free model
 - Tried gemma-3-27b and mistral-7b — both returned 404 on free tier
 - `openrouter/auto` is more reliable for prototypes — no model availability issues
 - Prompt quality matters more than model choice anyway
